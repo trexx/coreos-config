@@ -1,0 +1,26 @@
+# This file specifies image customizations that are specific to particular
+# architecture/platform pairs.  It is applied (indirectly, via
+# /boot/coreos/platforms.json) by create_disk.sh and gf-set-platform at
+# build time and coreos-installer at install time (if --platform is
+# specified).
+#
+# Currently this is used to configure the default console.  For any
+# arch/platform pairs not specified, GRUB and the kernel will apply their
+# own defaults.  Note that coreos-installer install --console will
+# completely override any GRUB commands specified here.
+#
+# s390x doesn't use GRUB and requires running zipl after updating kargs,
+# so it can't be added to this file without additional development work.
+#
+# All architectures, platforms, and fields are optional.
+x86_64:
+  vmware:
+    # Graphical console primary, serial console available for logging
+    # https://docs.fedoraproject.org/en-US/fedora-coreos/provisioning-vmware/#_troubleshooting_first_boot_problems
+    grub_commands:
+      - serial --speed=115200
+      - terminal_input serial console
+      - terminal_output serial console
+    kernel_arguments:
+      - console=ttyS0,115200n8
+      - console=tty0
