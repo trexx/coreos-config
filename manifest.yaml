@@ -152,6 +152,7 @@ ostree-layers:
   - overlay/30lvmdevices
   - overlay/40grub
   - overlay/15fcos
+  - overlay/20netword
 
 packages:
   # Drivers / Firmware
