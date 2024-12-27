@@ -5,13 +5,9 @@ packages:
   # Basic user tools
   - coreutils
   - sudo
-  # File compression/decompression
-  - tar
   # Remote Access
   - openssh-server
   # Container tooling
-  ## crun recommends but doesn't require criu and criu-libs. We want them for
-  ## checkpoint/restore. https://github.com/coreos/fedora-coreos-tracker/issues/1370
   - crun
   - cri-o
 
