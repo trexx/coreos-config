@@ -1,0 +1,34 @@
+packages:
+  # Configuring SSH keys, cloud provider check-in, etc
+  - afterburn afterburn-dracut
+  # NTP support
+  - systemd-timesyncd
+  # Installing CoreOS itself
+  - coreos-installer coreos-installer-bootinfra
+  # Storage configuration/management
+  ## cloud-utils-growpart - For growing root partition
+  - cloud-utils-growpart
+  # User configuration
+  - shadow-utils
+  - acl
+  # Ignition aware SSH key management
+  - ssh-key-dir
+  # Tier-X
+  - cryptsetup
+  - e2fsprogs
+  - lvm2
+  - xfsprogs
+  # SELinux policy
+  - selinux-policy-targeted
+  # Allow for configuring different timezones
+  - tzdata
+  # Needed for tpm2 bound luks
+  - tpm2-tools
+
+postprocess:
+  # Mask systemd-repart. Ignition is responsible for partition setup on first
+  # boot and does not use systemd-repart currently. See also
+  # https://github.com/coreos/fedora-coreos-tracker/issues/570
+  - |
+    #!/usr/bin/env bash
+    systemctl mask systemd-repart.service

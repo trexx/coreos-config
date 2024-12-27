@@ -1,0 +1,21 @@
+packages:
+  # File compression/decompression
+  ## bsdtar - dependency of 35coreos-live dracut module
+  - bsdtar
+  # Basic user tools
+  - coreutils
+  - sudo
+  # File compression/decompression
+  - tar
+  # Remote Access
+  - openssh-server
+  # Container tooling
+  ## crun recommends but doesn't require criu and criu-libs. We want them for
+  ## checkpoint/restore. https://github.com/coreos/fedora-coreos-tracker/issues/1370
+  - crun
+  - cri-o
+
+# Default to `bash` in our container, the same as other containers we ship.
+# Note this changes to /sbin/init in f42 as inherited by tier-x.
+container-cmd:
+  - /usr/bin/bash
