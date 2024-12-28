@@ -24,12 +24,7 @@ recommends: false
 
 include:
   - ./manifests/bootable-rpm-ostree.yaml
-  - ./manifests/bootupd.yaml
-  - ./manifests/kernel.yaml
-  - ./manifests/system-configuration.yaml
   - ./manifests/ignition-and-ostree.yaml
-  - ./manifests/networking-tools.yaml
-  - ./manifests/user-experience.yaml
 
 conditional-include:
   - if: prod == false
@@ -56,6 +51,11 @@ check-groups:
   filename: "group"
 
 default-target: multi-user.target
+
+# Default to `bash` in our container, the same as other containers we ship.
+# Note this changes to /sbin/init in f42 as inherited by tier-x.
+container-cmd:
+  - /usr/bin/bash
 
 # we can drop this when it's the rpm-ostree default
 rpmdb: sqlite
@@ -147,6 +147,21 @@ postprocess:
         done
     done
 
+  # Mask systemd-repart. Ignition is responsible for partition setup on first
+  # boot and does not use systemd-repart currently. See also
+  # https://github.com/coreos/fedora-coreos-tracker/issues/570
+  - |
+    #!/usr/bin/env bash
+    systemctl mask systemd-repart.service
+
+  # Integration with https://github.com/coreos/bootupd
+  # xref https://github.com/coreos/fedora-coreos-tracker/issues/510
+  - |
+    #!/bin/bash
+    set -xeuo pipefail
+    # Transforms /usr/lib/ostree-boot into a bootupd-compatible update payload
+    /usr/bin/bootupctl backend generate-update-metadata
+
 ostree-layers:
   - overlay/05core
   - overlay/30lvmdevices
@@ -155,7 +170,8 @@ ostree-layers:
   - overlay/20networkd
 
 packages:
-  # Drivers / Firmware
+  - kernel
+
   - intel-gpu-firmware
 
   - fedora-release-coreos
@@ -167,6 +183,42 @@ packages:
   - zincati
   # Include and set the default editor
   - nano nano-default-editor
+  - bootupd
+
+  # File compression/decompression
+  ## bsdtar - dependency of 35coreos-live dracut module
+  - bsdtar
+  # Basic user tools
+  - coreutils
+  - sudo
+  # Remote Access
+  - openssh-server
+  # Container tooling
+  - crun
+  - cri-o
+
+  # Networking
+  - systemd-resolved
+  - systemd-networkd
+
+  # Configuring SSH keys, cloud provider check-in, etc
+  - afterburn afterburn-dracut
+  # Installing CoreOS itself
+  - coreos-installer coreos-installer-bootinfra
+  # Storage configuration/management
+  ## cloud-utils-growpart - For growing root partition
+  - cloud-utils-growpart
+  # Tier-X
+  - cryptsetup
+  - e2fsprogs
+  - lvm2
+  - xfsprogs
+  # SELinux policy
+  - selinux-policy-targeted
+  # Allow for configuring different timezones
+  - tzdata
+  # Needed for tpm2 bound luks
+  - tpm2-tools
 
 # - irqbalance
 #   - This thing is crying out to be pulled into systemd, but that hasn't happened
@@ -175,7 +227,6 @@ packages:
 #     Anyways, it was requested by the Red Hat perf team for RHCOS, so we have it here.
 #     https://serverfault.com/questions/513807/is-there-still-a-use-for-irqbalance-on-modern-hardware
 #     https://access.redhat.com/solutions/41535
-packages-x86_64:
   - irqbalance
 
 remove-from-packages:
