@@ -6,11 +6,6 @@ packages:
   # Storage configuration/management
   ## cloud-utils-growpart - For growing root partition
   - cloud-utils-growpart
-  # User configuration
-  - shadow-utils
-  - acl
-  # Ignition aware SSH key management
-  - ssh-key-dir
   # Tier-X
   - cryptsetup
   - e2fsprogs
