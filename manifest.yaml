@@ -196,6 +196,7 @@ packages:
   # Container tooling
   - crun
   - cri-o
+  - iptables-nft
 
   # Networking
   - systemd-resolved
